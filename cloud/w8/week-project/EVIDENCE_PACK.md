@@ -36,14 +36,14 @@ terraform destroy -auto-approve
 Chụp terminal có output `Apply complete` và các outputs.
 
 Ảnh/clip:
-![Terraform apply output](image-2.png)
+![Terraform apply output](assets/image-2.png)
 
 ### 2. URL ALB Mở Được App
 
 URL: `http://k8s-counter-app-alb-1518439158.ap-southeast-1.elb.amazonaws.com`
 
 Bằng chứng browser:
-![App đã chạy thành công](image-5.png)
+![App đã chạy thành công](assets/image-5.png)
 ### 3. App Thực Sự Chạy Trong Kubernetes
 
 SSH vào EC2 để kiểm tra:
@@ -62,7 +62,7 @@ sudo -u ubuntu kubectl get deploy
 ```
 
 Bằng chứng (Chụp output các lệnh trên trong EC2):
-![K8s cluster verification](image-3.png)
+![K8s cluster verification](assets/image-3.png)
 ### 4. ALB Forward Vào NodePort
 
 Port matching:
@@ -93,7 +93,7 @@ Bằng chứng (Output AWS CLI báo Target Group Healthy):
     ]
 }
 ```
-![Target Group Healthy](image-4.png)
+![Target Group Healthy](assets/image-4.png)
 ### 5. Destroy Sạch
 
 Chạy:
@@ -103,7 +103,7 @@ terraform destroy -auto-approve
 ```
 
 Bằng chứng terminal báo `Destroy complete!`:
-![Terraform destroy complete](image.png)
+![Terraform destroy complete](assets/image.png)
 ## Provider Wire
 
 Providers được dùng trong cùng cấu hình Terraform:

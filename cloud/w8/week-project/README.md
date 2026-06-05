@@ -47,7 +47,7 @@ User (Internet)
    ▼
 [ Pod (Counter-App) ]
 ```
-![Architecture Diagram](image-1.png)
+![Architecture Diagram](assets/image-1.png)
 ## 5. Cách kết nối các Provider (Wiring Providers)
 Trong bài tập này, tôi đã sử dụng 3 provider khác nhau và kết nối chúng (wiring) để hoàn thành yêu cầu:
 1. **`hashicorp/tls`**: Sinh ra một cặp khóa Private/Public key ảo ngẫu nhiên.
@@ -58,4 +58,4 @@ Việc lấy Output của provider này (`tls`) làm Input cho provider khác (`
 
 ## 6. Ảnh chụp màn hình (Screenshots)
 
-![App đã chạy thành công](image.png)
+![App đã chạy thành công](assets/image.png)

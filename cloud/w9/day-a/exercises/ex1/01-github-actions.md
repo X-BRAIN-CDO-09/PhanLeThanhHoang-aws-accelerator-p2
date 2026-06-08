@@ -21,7 +21,7 @@ on:
     branches:
       - main
     paths:
-      - 'cloud/w8/lab/module/**' # Trỏ tới thư mục chứa code Terraform của bạn
+      - 'cloud/w9/sample_app/**' # Trỏ tới thư mục chứa code Terraform của bạn
 
 jobs:
   terraform-plan:
@@ -46,16 +46,16 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
 
       - name: Terraform Format Check
         run: terraform fmt -check
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
         continue-on-error: true
 
       - name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
 ```
 
 ## Bước 3: Viết Workflow "Terraform Apply"
@@ -69,7 +69,7 @@ on:
     branches:
       - main
     paths:
-      - 'cloud/w8/lab/module/**'
+      - 'cloud/w9/sample_app/**'
 
 jobs:
   terraform-apply:
@@ -92,11 +92,11 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
 ```
 
 ## Bước 4: Kiểm thử

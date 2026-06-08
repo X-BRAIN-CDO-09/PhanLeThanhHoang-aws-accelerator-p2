@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'cloud/w8/lab/module/**' # Trỏ tới thư mục chứa code Terraform của bạn
+      - 'cloud/w9/sample_app/**' # Trỏ tới thư mục chứa code Terraform của bạn
 
 jobs:
   terraform-plan:
@@ -30,13 +30,13 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
 
       - name: Terraform Format Check
         run: terraform fmt -check
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app
         continue-on-error: true
 
       - name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: cloud/w8/lab/module
+        working-directory: cloud/w9/sample_app

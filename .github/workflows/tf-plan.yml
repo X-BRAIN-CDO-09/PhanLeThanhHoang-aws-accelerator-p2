@@ -30,13 +30,13 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: cloud/w9/sample_app
+        working-directory: cloud/w9/sample_app/terraform
 
       - name: Terraform Format Check
         run: terraform fmt -check
-        working-directory: cloud/w9/sample_app
+        working-directory: cloud/w9/sample_app/terraform
         continue-on-error: true
 
       - name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: cloud/w9/sample_app
+        working-directory: cloud/w9/sample_app/terraform

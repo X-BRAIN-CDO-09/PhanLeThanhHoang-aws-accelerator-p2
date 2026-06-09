@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: counter-app
-        image: hofang42/counter-app:v2
+        image: hofang42/counter-app:loi-tum-lum
         ports:
         - containerPort: 80
 ---

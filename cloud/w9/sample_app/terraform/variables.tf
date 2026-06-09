@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "instance_type" {
   description = "Loại máy EC2 dùng cho Minikube (Cần ít nhất 2 CPU, 2GB RAM)"
   type        = string
-  default     = "t3.large"
+  default     = "t3.medium"
 }
 
 variable "app_port" {

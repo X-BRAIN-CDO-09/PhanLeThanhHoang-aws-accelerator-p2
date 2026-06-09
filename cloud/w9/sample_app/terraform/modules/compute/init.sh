@@ -20,6 +20,14 @@ sudo -u ubuntu minikube start --driver=docker
 # 5. Đợi Minikube sẵn sàng
 sleep 30
 
+# 6. Cài đặt Helm
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+bash get_helm.sh
+
+# 7. Cài đặt kube-prometheus-stack (Monitoring)
+sudo -u ubuntu helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+sudo -u ubuntu helm repo update
+sudo -u ubuntu helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
 
 # 8. Cài đặt ArgoCD
 # Tạo namespace argocd

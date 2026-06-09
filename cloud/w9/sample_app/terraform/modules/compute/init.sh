@@ -20,46 +20,41 @@ sudo -u ubuntu minikube start --driver=docker
 # 5. Đợi Minikube sẵn sàng
 sleep 30
 
-# 6. Tạo file YAML cho K8s
-cat <<EOF > /home/ubuntu/app.yaml
-apiVersion: apps/v1
-kind: Deployment
+
+# 8. Cài đặt ArgoCD
+# Tạo namespace argocd
+sudo -u ubuntu kubectl create namespace argocd
+# Apply file cài đặt ArgoCD
+sudo -u ubuntu kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# 9. Khởi tạo ArgoCD Application (Tự động mồi GitOps)
+# Cần đợi một chút để CRD Application của ArgoCD được Kubernetes nạp xong
+sleep 20
+
+cat <<EOF > /home/ubuntu/counter-app-argocd.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
 metadata:
-  name: counter-app-deploy
+  name: counter-app-gitops
+  namespace: argocd
 spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: counter-app
-  template:
-    metadata:
-      labels:
-        app: counter-app
-    spec:
-      containers:
-      - name: counter-app
-        image: hofang42/counter-app:v1
-        ports:
-        - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: counter-app-svc
-spec:
-  type: NodePort
-  selector:
-    app: counter-app
-  ports:
-    - port: 80
-      targetPort: 80
-      nodePort: ${app_port}
+  project: default
+  source:
+    repoURL: 'https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git'
+    path: 'cloud/w9/sample_app/Counter-App/kubernetes' 
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 EOF
 
-# 7. Apply K8s yaml
-sudo -u ubuntu kubectl apply -f /home/ubuntu/app.yaml
+sudo -u ubuntu kubectl apply -f /home/ubuntu/counter-app-argocd.yaml
 
-# 8. Expose (Nối mạng từ EC2 host vào Minikube Container)
+# 10. Expose (Nối mạng từ EC2 host vào Minikube Container)
 # Lấy IP nội bộ của Minikube
 MINIKUBE_IP=$(sudo -u ubuntu minikube ip)
 

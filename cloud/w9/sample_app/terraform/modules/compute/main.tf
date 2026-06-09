@@ -27,6 +27,14 @@ resource "local_file" "private_key" {
   file_permission = "0400"
 }
 
+# Lưu Private Key lên AWS Systems Manager (SSM) Parameter Store để lấy lại sau khi deploy bằng CI/CD
+resource "aws_ssm_parameter" "private_key" {
+  name        = "/ec2/k8s-key-week9"
+  description = "Private key for K8s Minikube Node"
+  type        = "SecureString"
+  value       = tls_private_key.k8s_key.private_key_pem
+}
+
 resource "aws_instance" "k8s_node" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type

@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'cloud/w9/sample_app/terraform/*'
+      - 'cloud/w9/sample_app/terraform/**'
 
 jobs:
   terraform-apply:

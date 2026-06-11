@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
     targetRevision: main
-    path: cloud/w9/flipkart-mern/k8s/base
+    path: cloud/w9/flipkart/k8s/base
   destination:
     server: https://kubernetes.default.svc
     namespace: flipkart

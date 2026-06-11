@@ -2,8 +2,8 @@
 set -euo pipefail
 
 #======================================================================
-# GitOps Lab — Flipkart MERN: Setup & Deploy
-# Chạy từ thư mục: cloud/w9/flipkart-mern/
+# GitOps Lab — Flipkart: Setup & Deploy
+# Chạy từ thư mục: cloud/w9/flipkart/
 # Yêu cầu: docker, minikube, kubectl đã cài sẵn
 #======================================================================
 

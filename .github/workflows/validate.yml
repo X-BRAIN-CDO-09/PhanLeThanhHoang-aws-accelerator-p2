@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'cloud/w9/sample_app/Counter-App/kubernetes/**'
-      - 'cloud/w9/flipkart-mern/k8s/**'
+      - 'cloud/w9/flipkart/k8s/**'
 
 jobs:
   validate:
@@ -23,13 +23,13 @@ jobs:
         run: kubeconform -strict -summary cloud/w9/sample_app/Counter-App/kubernetes/
 
       - name: Validate Flipkart Base YAML
-        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/base/
+        run: kubeconform -strict -summary cloud/w9/flipkart/k8s/base/
 
       - name: Validate Flipkart MongoDB YAML
-        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/mongodb/
+        run: kubeconform -strict -summary cloud/w9/flipkart/k8s/mongodb/
 
       - name: Validate Flipkart Backend YAML
-        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/backend/
+        run: kubeconform -strict -summary cloud/w9/flipkart/k8s/backend/
 
       - name: Validate Flipkart Frontend YAML
-        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/frontend/
+        run: kubeconform -strict -summary cloud/w9/flipkart/k8s/frontend/

@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
     targetRevision: main
-    path: cloud/w9/flipkart-mern/argocd/apps
+    path: cloud/w9/flipkart/argocd/apps
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

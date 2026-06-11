@@ -4,3 +4,4 @@ metadata:
   name: counter-app
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+# Trigger CI validate

@@ -3,3 +3,12 @@
 
 # local env files
 /backend/config/config.env
+
+# sealed secrets (chứa API key)
+setup-sealed-secrets.ps1
+kubeseal.exe
+pub-cert.pem
+raw-secret.yaml
+
+# port-forward logs
+*.log

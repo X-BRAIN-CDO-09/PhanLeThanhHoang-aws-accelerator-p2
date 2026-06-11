@@ -194,15 +194,106 @@ start_argocd_port_forward
 start_flipkart_port_forward
 
 #======================================================================
+banner "5/5 — Đợi Observability & Canary stack sẵn sàng"
+#======================================================================
+
+info "Đợi namespace monitoring xuất hiện..."
+for _ in $(seq 1 60); do
+  if kubectl get ns monitoring >/dev/null 2>&1; then
+    break
+  fi
+  sleep 3
+done
+
+info "Đợi Prometheus stack khởi động (có thể mất 3-5 phút)..."
+kubectl -n monitoring rollout status deploy/kube-prometheus-stack-grafana --timeout=300s 2>/dev/null || \
+  info "Grafana chưa sẵn sàng, có thể cần thêm thời gian."
+kubectl -n monitoring rollout status deploy/kube-prometheus-stack-kube-prom-operator --timeout=300s 2>/dev/null || \
+  info "Prometheus Operator chưa sẵn sàng."
+
+info "Đợi Argo Rollouts controller..."
+kubectl -n argo-rollouts rollout status deploy/argo-rollouts --timeout=180s 2>/dev/null || \
+  info "Argo Rollouts chưa sẵn sàng, có thể cần thêm thời gian."
+
+# --- Port-forward Grafana ---
+info "Mở Grafana ở http://127.0.0.1:3001 ..."
+if curl -fsS http://127.0.0.1:3001 >/dev/null 2>&1; then
+  info "Port 3001 đã có sẵn."
+else
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3001:80 --address 0.0.0.0 \
+    >"$SCRIPT_DIR/grafana-port-forward.log" 2>&1 &
+  sleep 3
+fi
+
+# --- Port-forward Prometheus ---
+info "Mở Prometheus ở http://127.0.0.1:9090 ..."
+if curl -fsS http://127.0.0.1:9090 >/dev/null 2>&1; then
+  info "Port 9090 đã có sẵn."
+else
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090 --address 0.0.0.0 \
+    >"$SCRIPT_DIR/prometheus-port-forward.log" 2>&1 &
+  sleep 2
+fi
+
+# --- Port-forward AlertManager ---
+info "Mở AlertManager ở http://127.0.0.1:9093 ..."
+if curl -fsS http://127.0.0.1:9093 >/dev/null 2>&1; then
+  info "Port 9093 đã có sẵn."
+else
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093 --address 0.0.0.0 \
+    >"$SCRIPT_DIR/alertmanager-port-forward.log" 2>&1 &
+  sleep 2
+fi
+
+# --- Port-forward Argo Rollouts Dashboard ---
+info "Mở Argo Rollouts Dashboard ở http://127.0.0.1:3100 ..."
+if curl -fsS http://127.0.0.1:3100 >/dev/null 2>&1; then
+  info "Port 3100 đã có sẵn."
+else
+  nohup kubectl argo rollouts dashboard -p 3100 \
+    >"$SCRIPT_DIR/rollouts-dashboard.log" 2>&1 &
+  sleep 2
+fi
+
+#======================================================================
 banner "✅ Setup hoàn tất!"
 #======================================================================
 
 echo ""
-info "ArgoCD UI:"
-echo "  https://127.0.0.1:8080  (admin / $ARGO_PASS)"
-echo "  Log: $ARGOCD_PORT_FORWARD_LOG"
+info "╔══════════════════════════════════════════════════════════╗"
+info "║           TẤT CẢ GIAO DIỆN CỦA BÀI LAB W9             ║"
+info "╚══════════════════════════════════════════════════════════╝"
 echo ""
-info "Flipkart App:"
-echo "  http://127.0.0.1:3000"
-echo "  Log: $FLIPKART_PORT_FORWARD_LOG"
+info "1. ArgoCD (GitOps Dashboard):"
+echo "   🔗 https://127.0.0.1:8080"
+echo "   👤 admin / $ARGO_PASS"
+echo "   📝 Quản lý App-of-apps, Sync Waves, Self-heal, Rollback"
+echo ""
+info "2. Flipkart App:"
+echo "   🔗 http://127.0.0.1:3000"
+echo "   📝 Ứng dụng chính (Frontend + Backend)"
+echo ""
+info "3. Grafana (Observability Dashboard):"
+echo "   🔗 http://127.0.0.1:3001"
+echo "   👤 admin / prom-operator"
+echo "   📝 Xem biểu đồ metrics, tạo Dashboard SLO/SLI"
+echo ""
+info "4. Prometheus (Metrics Query):"
+echo "   🔗 http://127.0.0.1:9090"
+echo "   📝 Truy vấn trực tiếp metrics, kiểm tra Targets, Rules"
+echo "   💡 Thử query: rate(http_request_duration_seconds_count{namespace=\"flipkart\"}[2m])"
+echo ""
+info "5. AlertManager (Cảnh báo):"
+echo "   🔗 http://127.0.0.1:9093"
+echo "   📝 Xem các Alert đang firing, cấu hình route email"
+echo ""
+info "6. Argo Rollouts Dashboard (Canary):"
+echo "   🔗 http://127.0.0.1:3100"
+echo "   📝 Theo dõi quá trình Canary: traffic split, AnalysisRun, Auto-abort"
+echo "   💡 Chọn namespace 'flipkart' để xem Rollout"
+echo ""
+info "═══════════════════════════════════════════════════════════"
+info "📌 Lệnh hữu ích:"
+echo "   kubectl argo rollouts get rollout flipkart-backend -n flipkart --watch"
+echo "   kubectl -n flipkart get analysisrun"
 echo ""

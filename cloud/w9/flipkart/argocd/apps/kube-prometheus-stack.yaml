@@ -23,7 +23,7 @@ spec:
           config:
             global:
               smtp_smarthost: 'smtp.sendgrid.net:587'
-              smtp_from: 'alert@example.com'
+              smtp_from: 'ringhost42@gmail.com'
               smtp_auth_username: 'apikey'
               smtp_auth_password_file: '/etc/alertmanager/secrets/alertmanager-smtp-credentials/password'
             route:
@@ -39,7 +39,7 @@ spec:
             receivers:
               - name: 'email-alerts'
                 email_configs:
-                  - to: 'ringhost42@gmail.com'
+                  - to: 'hoangplt.work@gmail.com'
                     send_resolved: true
   destination:
     server: https://kubernetes.default.svc

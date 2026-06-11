@@ -31,7 +31,7 @@ spec:
             - name: ERROR_RATE
               value: "0.5"
             - name: VERSION
-              value: "v3-bad"
+              value: "v4-bad"
           readinessProbe:
             httpGet:
               path: /

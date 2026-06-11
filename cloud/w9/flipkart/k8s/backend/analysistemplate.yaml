@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+  namespace: flipkart
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  metrics:
+  - name: success-rate
+    interval: 30s
+    successCondition: result >= 0.95
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+        query: |
+          sum(rate(http_request_duration_seconds_count{namespace="flipkart", status_code!~"5.."}[2m])) / sum(rate(http_request_duration_seconds_count{namespace="flipkart"}[2m]))

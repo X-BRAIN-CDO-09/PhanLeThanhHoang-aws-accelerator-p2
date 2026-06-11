@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flipkart-backend
+  namespace: flipkart
+  labels:
+    app: flipkart-backend
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selector:
+    matchLabels:
+      app: flipkart-backend
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

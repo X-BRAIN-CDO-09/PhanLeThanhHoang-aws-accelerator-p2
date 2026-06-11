@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flipkart-slo-alerts
+  namespace: flipkart
+  labels:
+    release: kube-prometheus-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  groups:
+  - name: flipkart-backend.rules
+    rules:
+    - alert: HighErrorRate
+      expr: |
+        sum(rate(http_request_duration_seconds_count{namespace="flipkart", status_code=~"5.."}[5m]))
+        / sum(rate(http_request_duration_seconds_count{namespace="flipkart"}[5m])) > 0.05
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High Error Rate on Flipkart Backend"
+        description: "Error rate is > 5% for the last 5 minutes."

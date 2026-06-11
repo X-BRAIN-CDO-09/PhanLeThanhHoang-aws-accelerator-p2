@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'cloud/w9/sample_app/Counter-App/kubernetes/**'
+      - 'cloud/w9/flipkart-mern/k8s/**'
 
 jobs:
   validate:
@@ -18,5 +19,17 @@ jobs:
           curl -sSLo kc.tgz https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           tar -xzf kc.tgz && sudo mv kubeconform /usr/local/bin/
 
-      - name: Validate Kubernetes YAML
+      - name: Validate Counter-App YAML
         run: kubeconform -strict -summary cloud/w9/sample_app/Counter-App/kubernetes/
+
+      - name: Validate Flipkart Base YAML
+        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/base/
+
+      - name: Validate Flipkart MongoDB YAML
+        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/mongodb/
+
+      - name: Validate Flipkart Backend YAML
+        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/backend/
+
+      - name: Validate Flipkart Frontend YAML
+        run: kubeconform -strict -summary cloud/w9/flipkart-mern/k8s/frontend/

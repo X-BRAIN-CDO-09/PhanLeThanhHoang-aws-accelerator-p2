@@ -39,7 +39,7 @@ spec:
             receivers:
               - name: 'email-alerts'
                 email_configs:
-                  - to: 'admin@example.com'
+                  - to: 'ringhost42@gmail.com'
                     send_resolved: true
   destination:
     server: https://kubernetes.default.svc

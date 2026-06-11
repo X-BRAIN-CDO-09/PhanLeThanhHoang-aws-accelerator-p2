@@ -9,9 +9,11 @@ set -euo pipefail
 
 PROFILE="w9"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ARGOCD_PORT_FORWARD_LOG="$SCRIPT_DIR/argocd-port-forward.log"
-FLIPKART_PORT_FORWARD_LOG="$SCRIPT_DIR/flipkart-port-forward.log"
-MONGO_PORT_FORWARD_LOG="$SCRIPT_DIR/mongo-port-forward.log"
+mkdir -p "$SCRIPT_DIR/logs"
+
+ARGOCD_PORT_FORWARD_LOG="$SCRIPT_DIR/logs/argocd-port-forward.log"
+FLIPKART_PORT_FORWARD_LOG="$SCRIPT_DIR/logs/flipkart-port-forward.log"
+MONGO_PORT_FORWARD_LOG="$SCRIPT_DIR/logs/mongo-port-forward.log"
 
 # Màu output
 GREEN='\033[0;32m'
@@ -117,21 +119,21 @@ start_flipkart_port_forward() {
 }
 
 #======================================================================
-banner "1/4 — Khởi tạo Minikube"
+banner "1/5 — Khởi tạo Minikube"
 #======================================================================
 
 if minikube status -p "$PROFILE" &>/dev/null; then
   info "Minikube '$PROFILE' đã chạy, bỏ qua."
 else
   info "Khởi tạo minikube '$PROFILE'..."
-  minikube start -p "$PROFILE" --driver=docker --memory=4096 --cpus=2
+  minikube start -p "$PROFILE" --driver=docker --memory=6144 --cpus=4
 fi
 
 kubectl config use-context "$PROFILE"
 kubectl get nodes
 
 #======================================================================
-banner "2/4 — Build & Load Docker images"
+banner "2/5 — Build & Load Docker images"
 #======================================================================
 
 cd "$SCRIPT_DIR"
@@ -147,7 +149,7 @@ minikube -p "$PROFILE" image load flipkart-backend:v1
 minikube -p "$PROFILE" image load flipkart-frontend:v1
 
 #======================================================================
-banner "3/4 — Cài ArgoCD"
+banner "3/5 — Cài ArgoCD"
 #======================================================================
 
 kubectl create ns argocd --dry-run=client -o yaml | kubectl apply -f -
@@ -156,8 +158,11 @@ info "Cài đặt ArgoCD..."
 kubectl apply --server-side -n argocd \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-info "Đợi argocd-server ready..."
-kubectl -n argocd rollout status deploy/argocd-server --timeout=180s
+info "Đợi các thành phần cốt lõi của ArgoCD ready..."
+for deploy in argocd-server argocd-repo-server; do
+  kubectl -n argocd rollout status deploy/$deploy --timeout=180s
+done
+kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=180s
 
 ARGO_PASS=$(kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d)
@@ -181,6 +186,22 @@ sleep 30
 
 info "ArgoCD Applications:"
 kubectl -n argocd get applications
+
+info "Đợi MongoDB được ArgoCD tạo ra (có thể mất 1-2 phút cho lần đầu tiên tải từ Git)..."
+CREATED=false
+for _ in $(seq 1 60); do
+  if kubectl get deploy mongodb -n flipkart >/dev/null 2>&1; then
+    CREATED=true
+    break
+  fi
+  sleep 5
+done
+
+if [ "$CREATED" = false ]; then
+  info "❌ LỖI: Hết thời gian chờ! ArgoCD không tạo được MongoDB. Vui lòng kiểm tra log của argocd-application-controller."
+  kubectl -n argocd get applications
+  exit 1
+fi
 
 info "Đợi MongoDB sẵn sàng để seed..."
 kubectl -n flipkart rollout status deploy/mongodb --timeout=180s
@@ -220,8 +241,8 @@ info "Mở Grafana ở http://127.0.0.1:3001 ..."
 if curl -fsS http://127.0.0.1:3001 >/dev/null 2>&1; then
   info "Port 3001 đã có sẵn."
 else
-  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3001:80 --address 0.0.0.0 \
-    >"$SCRIPT_DIR/grafana-port-forward.log" 2>&1 &
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3001:80 --address 127.0.0.1 \
+    >"$SCRIPT_DIR/logs/grafana-port-forward.log" 2>&1 &
   sleep 3
 fi
 
@@ -230,8 +251,8 @@ info "Mở Prometheus ở http://127.0.0.1:9090 ..."
 if curl -fsS http://127.0.0.1:9090 >/dev/null 2>&1; then
   info "Port 9090 đã có sẵn."
 else
-  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090 --address 0.0.0.0 \
-    >"$SCRIPT_DIR/prometheus-port-forward.log" 2>&1 &
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090 --address 127.0.0.1 \
+    >"$SCRIPT_DIR/logs/prometheus-port-forward.log" 2>&1 &
   sleep 2
 fi
 
@@ -240,8 +261,8 @@ info "Mở AlertManager ở http://127.0.0.1:9093 ..."
 if curl -fsS http://127.0.0.1:9093 >/dev/null 2>&1; then
   info "Port 9093 đã có sẵn."
 else
-  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093 --address 0.0.0.0 \
-    >"$SCRIPT_DIR/alertmanager-port-forward.log" 2>&1 &
+  nohup kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093 --address 127.0.0.1 \
+    >"$SCRIPT_DIR/logs/alertmanager-port-forward.log" 2>&1 &
   sleep 2
 fi
 
@@ -251,7 +272,7 @@ if curl -fsS http://127.0.0.1:3100 >/dev/null 2>&1; then
   info "Port 3100 đã có sẵn."
 else
   nohup kubectl argo rollouts dashboard -p 3100 \
-    >"$SCRIPT_DIR/rollouts-dashboard.log" 2>&1 &
+    >"$SCRIPT_DIR/logs/rollouts-dashboard.log" 2>&1 &
   sleep 2
 fi
 

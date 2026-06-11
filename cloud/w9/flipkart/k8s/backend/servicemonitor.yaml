@@ -5,6 +5,7 @@ metadata:
   namespace: flipkart
   labels:
     app: flipkart-backend
+    release: kube-prometheus-stack
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:

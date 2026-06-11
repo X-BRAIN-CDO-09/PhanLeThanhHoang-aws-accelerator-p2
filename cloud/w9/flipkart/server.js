@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+const fs = require('fs');
 const cloudinary = require('cloudinary');
 const app = require('./backend/app');
 const connectDatabase = require('./backend/config/database');
@@ -20,12 +21,15 @@ cloudinary.config({
 });
 
 // deployment
-__dirname = path.resolve();
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '/frontend/build')))
+const rootDir = path.resolve();
+const frontendBuildDir = path.join(rootDir, 'frontend', 'build');
+const frontendIndexFile = path.join(frontendBuildDir, 'index.html');
+
+if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendIndexFile)) {
+    app.use(express.static(frontendBuildDir));
 
     app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+        res.sendFile(frontendIndexFile)
     });
 } else {
     app.get('/', (req, res) => {

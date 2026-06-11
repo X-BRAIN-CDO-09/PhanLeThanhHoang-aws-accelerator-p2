@@ -9,6 +9,9 @@ set -euo pipefail
 
 PROFILE="w9"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ARGOCD_PORT_FORWARD_LOG="$SCRIPT_DIR/argocd-port-forward.log"
+FLIPKART_PORT_FORWARD_LOG="$SCRIPT_DIR/flipkart-port-forward.log"
+MONGO_PORT_FORWARD_LOG="$SCRIPT_DIR/mongo-port-forward.log"
 
 # Màu output
 GREEN='\033[0;32m'
@@ -25,6 +28,99 @@ banner() {
 }
 
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
+
+find_node_bin() {
+  if command -v node >/dev/null 2>&1; then
+    command -v node
+    return 0
+  fi
+
+  if command -v node.exe >/dev/null 2>&1; then
+    command -v node.exe
+    return 0
+  fi
+
+  if [ -x "/mnt/c/Program Files/nodejs/node.exe" ]; then
+    printf '%s\n' "/mnt/c/Program Files/nodejs/node.exe"
+    return 0
+  fi
+
+  return 1
+}
+
+start_mongo_port_forward() {
+  info "Mở MongoDB port-forward để seed data..."
+
+  if (echo > /dev/tcp/127.0.0.1/27017) >/dev/null 2>&1; then
+    info "Port 27017 đã có sẵn, dùng lại kết nối hiện có."
+    return 0
+  fi
+
+  nohup kubectl -n flipkart port-forward svc/mongo-svc 27017:27017 --address 127.0.0.1 \
+    >"$MONGO_PORT_FORWARD_LOG" 2>&1 &
+  MONGO_PORT_FORWARD_PID=$!
+
+  sleep 3
+}
+
+seed_flipkart_data() {
+  NODE_BIN="$(find_node_bin || true)"
+
+  if [ -z "${NODE_BIN:-}" ]; then
+    info "Không tìm thấy Node.js để chạy seed.js. Bỏ qua seed data."
+    return 0
+  fi
+
+  local seed_script_win
+  seed_script_win="$(wslpath -w "$SCRIPT_DIR/seed.js")"
+
+  info "Chạy seed data..."
+  MONGO_URI="mongodb://127.0.0.1:27017/flipkart" "$NODE_BIN" "$seed_script_win"
+
+  info "Seed data hoàn tất."
+}
+
+start_argocd_port_forward() {
+  info "Mở ArgoCD portal ở https://127.0.0.1:8080 ..."
+
+  if curl -kfsS https://127.0.0.1:8080 >/dev/null 2>&1; then
+    info "Port 8080 đã có sẵn, dùng lại portal hiện có."
+    return 0
+  fi
+
+  nohup kubectl -n argocd port-forward svc/argocd-server 8080:443 --address 127.0.0.1 \
+    >"$ARGOCD_PORT_FORWARD_LOG" 2>&1 &
+
+  sleep 3
+
+  if curl -kfsS https://127.0.0.1:8080 >/dev/null 2>&1; then
+    info "ArgoCD portal đã sẵn sàng."
+    info "Log port-forward: $ARGOCD_PORT_FORWARD_LOG"
+  else
+    info "Không xác nhận được ArgoCD portal ngay lập tức. Kiểm tra log: $ARGOCD_PORT_FORWARD_LOG"
+  fi
+}
+
+start_flipkart_port_forward() {
+  info "Mở Flipkart app ở http://127.0.0.1:3000 ..."
+
+  if curl -fsS http://127.0.0.1:3000 >/dev/null 2>&1; then
+    info "Port 3000 đã có sẵn, dùng lại app hiện có."
+    return 0
+  fi
+
+  nohup kubectl -n flipkart port-forward svc/flipkart-frontend 3000:80 --address 127.0.0.1 \
+    >"$FLIPKART_PORT_FORWARD_LOG" 2>&1 &
+
+  sleep 3
+
+  if curl -fsS http://127.0.0.1:3000 >/dev/null 2>&1; then
+    info "Flipkart app đã sẵn sàng."
+    info "Log port-forward: $FLIPKART_PORT_FORWARD_LOG"
+  else
+    info "Không xác nhận được Flipkart app ngay lập tức. Kiểm tra log: $FLIPKART_PORT_FORWARD_LOG"
+  fi
+}
 
 #======================================================================
 banner "1/4 — Khởi tạo Minikube"
@@ -92,8 +188,21 @@ sleep 30
 info "ArgoCD Applications:"
 kubectl -n argocd get applications
 
+info "Đợi MongoDB sẵn sàng để seed..."
+kubectl -n flipkart rollout status deploy/mongodb --timeout=180s
+
+start_mongo_port_forward
+seed_flipkart_data
+
+if [ -n "${MONGO_PORT_FORWARD_PID:-}" ]; then
+  kill "$MONGO_PORT_FORWARD_PID" >/dev/null 2>&1 || true
+fi
+
 info "Flipkart resources:"
 kubectl -n flipkart get all
+
+start_argocd_port_forward
+start_flipkart_port_forward
 
 #======================================================================
 banner "✅ Setup hoàn tất!"
@@ -101,10 +210,10 @@ banner "✅ Setup hoàn tất!"
 
 echo ""
 info "ArgoCD UI:"
-echo "  kubectl -n argocd port-forward svc/argocd-server 8080:443"
-echo "  → https://localhost:8080  (admin / $ARGO_PASS)"
+echo "  https://127.0.0.1:8080  (admin / $ARGO_PASS)"
+echo "  Log: $ARGOCD_PORT_FORWARD_LOG"
 echo ""
 info "Flipkart App:"
-echo "  kubectl -n flipkart port-forward svc/flipkart-frontend 3000:80"
-echo "  → http://localhost:3000"
+echo "  http://127.0.0.1:3000"
+echo "  Log: $FLIPKART_PORT_FORWARD_LOG"
 echo ""

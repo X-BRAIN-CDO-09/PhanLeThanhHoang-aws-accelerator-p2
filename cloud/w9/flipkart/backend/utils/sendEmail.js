@@ -1,6 +1,15 @@
 // const nodeMailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const sendgridFrom = process.env.SENDGRID_MAIL;
+const hasValidSendgridConfig =
+    typeof sendgridApiKey === 'string' && sendgridApiKey.startsWith('SG.') &&
+    typeof sendgridFrom === 'string' && sendgridFrom.length > 0;
+
+if (hasValidSendgridConfig) {
+    sgMail.setApiKey(sendgridApiKey);
+}
 
 const sendEmail = async (options) => {
 
@@ -23,9 +32,14 @@ const sendEmail = async (options) => {
 
     // await transporter.sendMail(mailOptions);
 
+    if (!hasValidSendgridConfig) {
+        console.warn('SendGrid is not configured with a valid key. Skipping email send.');
+        return;
+    }
+
     const msg = {
         to: options.email,
-        from: process.env.SENDGRID_MAIL,
+        from: sendgridFrom,
         templateId: options.templateId,
         dynamic_template_data: options.data,
     }

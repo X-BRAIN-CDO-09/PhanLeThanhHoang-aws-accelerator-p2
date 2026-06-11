@@ -142,6 +142,34 @@ counter-app-gitops   Synced        Healthy
 
 **Giải thích:** ArgoCD Application trỏ tới repo Git path `cloud/w9/sample_app/Counter-App/kubernetes`, tự động sync manifest vào cluster. Trạng thái `Synced` = cụm khớp Git, `Healthy` = pods đang chạy tốt.
 
+#### Truy cập giao diện ArgoCD (Portal)
+Để vào giao diện web của ArgoCD, bạn cần thiết lập SSH Tunnel kéo port 8080 từ EC2 về máy tính cá nhân.
+
+**Bước 1 (Từ máy tính Windows của bạn):**
+Mở một cửa sổ PowerShell mới (không phải trong EC2) và chạy lệnh sau (nhớ thay `<EC2_IP>` bằng IP thật của EC2):
+```bash
+ssh -i k8s-key-week9-new.pem -L 8080:localhost:8080 ubuntu@<EC2_IP>
+```
+*(Mẹo: Nếu bạn lỡ đang ở trong EC2, hãy gõ lệnh `exit` để thoát về Windows trước khi chạy)*
+
+**Bước 2: Bật Port-Forwarding**
+Sau khi đăng nhập thành công vào EC2 ở Bước 1, hãy gõ lệnh sau để mở đường cho ArgoCD:
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+*(Cứ để nguyên cửa sổ này chạy, nó sẽ in ra dòng Forwarding...)*
+
+**Bước 3: Lấy mật khẩu đăng nhập**
+Mở một Terminal khác, kết nối SSH bình thường vào EC2 và chạy lệnh này để xem mật khẩu:
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+```
+
+**Bước 4: Đăng nhập trên trình duyệt**
+Mở trình duyệt truy cập: 👉 **https://localhost:8080** (Nếu hiện cảnh báo bảo mật, hãy bấm Advanced -> Proceed).
+*   **Username:** `admin`
+*   **Password:** (Mật khẩu vừa lấy ở Bước 3)
+
 ### 7. Lab 3 — Self-heal: ArgoCD Tự Sửa Khi Bị Thay Đổi Tay
 
 **Mục tiêu:** Chứng minh khi ai đó `kubectl scale` tay (vi phạm Git), ArgoCD sẽ tự động kéo cụm về đúng trạng thái trong Git (nguyên tắc Reconciled).

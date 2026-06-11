@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const User = require("../backend/models/userModel");
-const Product = require("../backend/models/productModel");
-const Order = require("../backend/models/orderModel");
+const User = require("./backend/models/userModel");
+const Product = require("./backend/models/productModel");
+const Order = require("./backend/models/orderModel");
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/flipkart";
 

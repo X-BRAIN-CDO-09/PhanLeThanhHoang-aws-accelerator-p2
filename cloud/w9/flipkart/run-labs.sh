@@ -29,25 +29,6 @@ banner() {
 
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 
-find_node_bin() {
-  if command -v node >/dev/null 2>&1; then
-    command -v node
-    return 0
-  fi
-
-  if command -v node.exe >/dev/null 2>&1; then
-    command -v node.exe
-    return 0
-  fi
-
-  if [ -x "/mnt/c/Program Files/nodejs/node.exe" ]; then
-    printf '%s\n' "/mnt/c/Program Files/nodejs/node.exe"
-    return 0
-  fi
-
-  return 1
-}
-
 start_mongo_port_forward() {
   info "Mở MongoDB port-forward để seed data..."
 
@@ -64,18 +45,11 @@ start_mongo_port_forward() {
 }
 
 seed_flipkart_data() {
-  NODE_BIN="$(find_node_bin || true)"
-
-  if [ -z "${NODE_BIN:-}" ]; then
-    info "Không tìm thấy Node.js để chạy seed.js. Bỏ qua seed data."
-    return 0
-  fi
-
-  local seed_script_win
-  seed_script_win="$(wslpath -w "$SCRIPT_DIR/seed.js")"
-
   info "Chạy seed data..."
-  MONGO_URI="mongodb://127.0.0.1:27017/flipkart" "$NODE_BIN" "$seed_script_win"
+  kubectl -n flipkart run flipkart-seed --rm -i --restart=Never \
+    --image=flipkart-backend:v1 \
+    --env="MONGO_URI=mongodb://mongo-svc:27017/flipkart" \
+    --command -- node seed.js
 
   info "Seed data hoàn tất."
 }

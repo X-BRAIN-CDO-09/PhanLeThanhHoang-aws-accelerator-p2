@@ -13,9 +13,9 @@ spec:
     rules:
     - alert: HighErrorRate
       expr: |
-        sum(rate(http_request_duration_seconds_count{namespace="flipkart", status_code=~"5.."}[5m]))
-        / sum(rate(http_request_duration_seconds_count{namespace="flipkart"}[5m])) > 0.05
-      for: 2m
+        sum(rate(http_request_duration_seconds_count{namespace="flipkart", status_code=~"5.."}[1m]))
+        / sum(rate(http_request_duration_seconds_count{namespace="flipkart"}[1m])) > 0.05
+      for: 0m
       labels:
         severity: critical
       annotations:

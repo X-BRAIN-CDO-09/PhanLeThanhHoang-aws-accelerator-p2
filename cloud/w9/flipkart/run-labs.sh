@@ -29,27 +29,47 @@ banner() {
 
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 
-start_mongo_port_forward() {
-  info "Mở MongoDB port-forward để seed data..."
-
-  if (echo > /dev/tcp/127.0.0.1/27017) >/dev/null 2>&1; then
-    info "Port 27017 đã có sẵn, dùng lại kết nối hiện có."
-    return 0
-  fi
-
-  nohup kubectl -n flipkart port-forward svc/mongo-svc 27017:27017 --address 127.0.0.1 \
-    >"$MONGO_PORT_FORWARD_LOG" 2>&1 &
-  MONGO_PORT_FORWARD_PID=$!
-
-  sleep 3
-}
-
 seed_flipkart_data() {
   info "Chạy seed data..."
-  kubectl -n flipkart run flipkart-seed --rm -i --restart=Never \
-    --image=flipkart-backend:v1 \
-    --env="MONGO_URI=mongodb://mongo-svc:27017/flipkart" \
-    --command -- node seed.js
+
+  kubectl -n flipkart delete configmap flipkart-seed-script --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n flipkart create configmap flipkart-seed-script \
+    --from-file=seed.js="$SCRIPT_DIR/seed.js" \
+    --dry-run=client -o yaml | kubectl apply -f -
+
+  kubectl -n flipkart delete job flipkart-seed --ignore-not-found >/dev/null 2>&1 || true
+
+  kubectl apply -f - <<EOF
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flipkart-seed
+  namespace: flipkart
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: seed-script
+          configMap:
+            name: flipkart-seed-script
+      containers:
+        - name: seed
+          image: flipkart-backend:v1
+          imagePullPolicy: Never
+          command: ["node", "/app/seed.js"]
+          env:
+            - name: MONGO_URI
+              value: mongodb://mongo-svc:27017/flipkart
+          volumeMounts:
+            - name: seed-script
+              mountPath: /app/seed.js
+              subPath: seed.js
+              readOnly: true
+EOF
+
+  kubectl -n flipkart wait --for=condition=complete job/flipkart-seed --timeout=180s
 
   info "Seed data hoàn tất."
 }
@@ -165,12 +185,7 @@ kubectl -n argocd get applications
 info "Đợi MongoDB sẵn sàng để seed..."
 kubectl -n flipkart rollout status deploy/mongodb --timeout=180s
 
-start_mongo_port_forward
 seed_flipkart_data
-
-if [ -n "${MONGO_PORT_FORWARD_PID:-}" ]; then
-  kill "$MONGO_PORT_FORWARD_PID" >/dev/null 2>&1 || true
-fi
 
 info "Flipkart resources:"
 kubectl -n flipkart get all

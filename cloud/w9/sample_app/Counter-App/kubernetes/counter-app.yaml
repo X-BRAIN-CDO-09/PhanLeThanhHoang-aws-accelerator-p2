@@ -1,7 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: counter-app-config
+  namespace: counter-app
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  APP_VERSION: "v2"
+  APP_NAME: "Counter App"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: counter-app-deploy
+  namespace: counter-app
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 2
   selector:
@@ -17,11 +31,17 @@ spec:
         image: hofang42/counter-app:v2
         ports:
         - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: counter-app-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: counter-app-svc
+  namespace: counter-app
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   type: NodePort
   selector:

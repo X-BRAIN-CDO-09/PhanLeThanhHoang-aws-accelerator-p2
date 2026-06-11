@@ -7,12 +7,14 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git'
-    path: 'cloud/w9/sample_app/Counter-App/kubernetes' 
+    path: 'cloud/w9/sample_app/Counter-App/kubernetes'
     targetRevision: HEAD
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: default
+    namespace: counter-app
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

@@ -24,47 +24,49 @@ sleep 30
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 bash get_helm.sh
 
-# 7. Cài đặt kube-prometheus-stack (Monitoring) - Bản tối ưu RAM
-sudo -u ubuntu helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-sudo -u ubuntu helm repo update
-sudo -u ubuntu helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace \
-  --set prometheus.prometheusSpec.resources.requests.memory="512Mi" \
-  --set grafana.resources.requests.memory="128Mi"
+# # 7. Cài đặt kube-prometheus-stack (Monitoring) - Tạm comment out
+# sudo -u ubuntu helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# sudo -u ubuntu helm repo update
+# sudo -u ubuntu helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace \
+#   --set prometheus.prometheusSpec.resources.requests.memory="512Mi" \
+#   --set grafana.resources.requests.memory="128Mi"
 
 # 8. Cài đặt ArgoCD
 # Tạo namespace argocd
 sudo -u ubuntu kubectl create namespace argocd
-# Apply file cài đặt ArgoCD
-sudo -u ubuntu kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# Apply file cài đặt ArgoCD (dùng --server-side để tránh lỗi "annotation too long")
+sudo -u ubuntu kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# 9. Khởi tạo ArgoCD Application (Tự động mồi GitOps)
-# Cần đợi một chút để CRD Application của ArgoCD được Kubernetes nạp xong
-sleep 20
+# 9. Đợi ArgoCD sẵn sàng
+echo "Đợi ArgoCD pods sẵn sàng..."
+sudo -u ubuntu kubectl -n argocd rollout status deploy/argocd-server --timeout=120s
 
-cat <<EOF > /home/ubuntu/counter-app-argocd.yaml
+# 10. Khởi tạo ArgoCD Root Application (App-of-Apps pattern)
+# Chỉ apply ROOT 1 lần duy nhất — root sẽ tự tạo tất cả Application con
+cat <<EOF > /home/ubuntu/root-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: counter-app-gitops
+  name: root
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: 'https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git'
-    path: 'cloud/w9/sample_app/Counter-App/kubernetes' 
+    path: 'cloud/w9/sample_app/argocd/apps'
     targetRevision: HEAD
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: default
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
 EOF
 
-sudo -u ubuntu kubectl apply -f /home/ubuntu/counter-app-argocd.yaml
+sudo -u ubuntu kubectl apply -f /home/ubuntu/root-app.yaml
 
-# 10. Expose (Nối mạng từ EC2 host vào Minikube Container)
+# 11. Expose (Nối mạng từ EC2 host vào Minikube Container)
 # Lấy IP nội bộ của Minikube
 MINIKUBE_IP=$(sudo -u ubuntu minikube ip)
 

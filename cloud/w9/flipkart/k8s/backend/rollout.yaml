@@ -29,9 +29,9 @@ spec:
                 name: flipkart-secrets
           env:
             - name: ERROR_RATE
-              value: "0.5"
+              value: "0"
             - name: VERSION
-              value: "v3-bad"
+              value: "v1"
           readinessProbe:
             httpGet:
               path: /

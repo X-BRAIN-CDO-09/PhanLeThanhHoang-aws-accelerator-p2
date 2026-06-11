@@ -166,7 +166,7 @@ info "ArgoCD pods:"
 kubectl -n argocd get pods
 
 #======================================================================
-banner "4/4 — Deploy Applications + Root"
+banner "4/5 — Deploy Applications + Root"
 #======================================================================
 
 kubectl create ns flipkart --dry-run=client -o yaml | kubectl apply -f -
@@ -254,6 +254,8 @@ else
     >"$SCRIPT_DIR/rollouts-dashboard.log" 2>&1 &
   sleep 2
 fi
+
+# --- Mở giao diện ---
 
 #======================================================================
 banner "✅ Setup hoàn tất!"

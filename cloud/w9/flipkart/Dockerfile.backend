@@ -11,7 +11,7 @@ COPY server.js ./
 COPY seed.js ./
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Set production environment
 ENV NODE_ENV=production

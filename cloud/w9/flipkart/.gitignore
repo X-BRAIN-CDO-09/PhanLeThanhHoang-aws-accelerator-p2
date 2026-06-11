@@ -6,7 +6,9 @@
 
 # sealed secrets (chứa API key)
 setup-sealed-secrets.ps1
+setup-sealed-secrets.sh
 kubeseal.exe
+kubeseal
 pub-cert.pem
 raw-secret.yaml
 

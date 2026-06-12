@@ -22,9 +22,9 @@ spec:
               - alertmanager-smtp-credentials
           config:
             global:
-              smtp_smarthost: 'smtp.sendgrid.net:587'
-              smtp_from: 'ringhost42@gmail.com'
-              smtp_auth_username: 'apikey'
+              smtp_smarthost: 'smtp.gmail.com:587'
+              smtp_from: 'hoangplt.work@gmail.com'
+              smtp_auth_username: 'hoangplt.work@gmail.com'
               smtp_auth_password_file: '/etc/alertmanager/secrets/alertmanager-smtp-credentials/password'
             route:
               group_by: ['alertname']

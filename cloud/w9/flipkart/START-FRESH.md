@@ -27,9 +27,9 @@ Mở **Tab Terminal số 2**, di chuyển vào `cloud/w9/flipkart` và chạy l�
 ./port-forward.sh
 ```
 
-Mở **Tab Terminal số 3**, chạy lệnh tạo lượng truy cập giả (nhớ để nó chạy liên tục không tắt):
-```bash
-while true; do curl -s http://127.0.0.1:3000/api/v1/products >/dev/null; echo -n "."; sleep 0.5; done
+Mở **Tab Terminal số 3** (PowerShell), chạy lệnh tạo lượng truy cập giả (nhớ để nó chạy liên tục không tắt):
+```powershell
+while ($true) { curl.exe -s http://127.0.0.1:3000/api/v1/products > $null; Write-Host -NoNewline "."; Start-Sleep -Seconds 0.5 }
 ```
 
 ## BƯỚC 5: Thực hiện Test và Chụp ảnh

@@ -21,7 +21,7 @@ Mọi thứ đã được tự động hóa và chạy trơn tru. Bây giờ b�
 **📸 Ảnh 3: `03-prometheus-sli-queries.png`**
 1. Mở link: [http://127.0.0.1:3001](http://127.0.0.1:3001) (Grafana - Đăng nhập: `admin` / `prom-operator`).
 2. Vào **Explore** (Biểu tượng la bàn bên trái), chọn Data source là Prometheus.
-3. Nhập câu Query sau vào ô tìm kiếm: `sum(rate(flipkart_http_requests_total[2m]))` và bấm Run query.
+3. Nhập câu Query sau vào ô tìm kiếm: `sum(rate(http_request_duration_seconds_count{namespace="flipkart"}[2m]))` và bấm Run query.
 4. Chụp màn hình biểu đồ đang có các đường chỉ số (hoặc chụp bên Prometheus [9090] bằng tab Graph cũng được).
 
 ---

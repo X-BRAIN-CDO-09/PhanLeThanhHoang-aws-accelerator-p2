@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy root package files
+COPY package.json package-lock.json ./
+
+# Copy backend source
+COPY backend/ ./backend/
+COPY server.js ./
+COPY seed.js ./
+
+# Install production dependencies only
+RUN npm install --omit=dev
+
+# Set production environment
+ENV NODE_ENV=production
+
+EXPOSE 4000
+
+CMD ["node", "server.js"]

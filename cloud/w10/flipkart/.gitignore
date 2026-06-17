@@ -1,0 +1,33 @@
+# dependencies
+/node_modules
+
+# local env files
+/backend/config/config.env
+
+# sealed secrets (chứa API key)
+setup-sealed-secrets.ps1
+setup-sealed-secrets.sh
+kubeseal.exe
+kubeseal
+pub-cert.pem
+raw-secret.yaml
+
+# port-forward logs
+*.log
+logs/
+
+# W10 Lab 2.2 — NEVER commit the cosign private key.
+cosign.key
+*.cosign.key
+
+# W10 Lab terraform locals
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfvars
+terraform/*.pem
+terraform/backend-setup/.terraform/
+terraform/backend-setup/*.tfstate*
+terraform/remote-backend/.terraform/
+terraform/remote-backend/*.tfstate*

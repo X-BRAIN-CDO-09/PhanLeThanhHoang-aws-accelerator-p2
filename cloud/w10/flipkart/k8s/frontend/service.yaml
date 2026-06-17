@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flipkart-frontend
+  namespace: flipkart
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  labels:
+    app: flipkart-frontend
+spec:
+  type: NodePort
+  selector:
+    app: flipkart-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      nodePort: 30080

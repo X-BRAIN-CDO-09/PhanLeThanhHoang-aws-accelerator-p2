@@ -45,9 +45,9 @@ spec:
   data:
   - secretKey: username
     remoteRef:
-      key: ghcr-credentials
+      key: ghcr-login-secret
       property: username
   - secretKey: password
     remoteRef:
-      key: ghcr-credentials
+      key: ghcr-login-secret
       property: password

@@ -21,6 +21,8 @@ spec:
         app: api
         owner: team-platform
     spec:
+      imagePullSecrets:
+      - name: ghcr-login-secret
       containers:
       - name: api
         image: ghcr.io/x-brain-cdo-09/phanlethanhhoang-aws-accelerator-p2/w10-api:0.0.5

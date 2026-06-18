@@ -1,0 +1,31 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: flipkart-require-cosign
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  # Apply only to images we publish from CI. nginx:latest etc. match `**`
+  # below in the catch-all rule when enforcement is on for the namespace.
+  images:
+    - glob: ghcr.io/**/flipkart-*
+  authorities:
+    - name: cosign-key
+      key:
+        # Loaded from the ConfigMap below so the public key is GitOps-managed.
+        secretRef:
+          name: flipkart-cosign-pub
+          namespace: cosign-system
+      ctlog:
+        url: ""   # We use key-based signing, no transparency log.
+  policy:
+    type: cue
+    data: |
+      // Only signed-by-our-key images may run in opted-in namespaces.
+      // Anything signed by another key is rejected.
+      authorityMatches: {
+        "cosign-key": {
+          signatures: [...{}] & [_, ...] | *[]
+        }
+      }

@@ -1,0 +1,11 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
+# Opt the flipkart namespace into Sigstore Policy Controller enforcement.
+# Without this label, ClusterImagePolicy is in warn-only mode for the ns.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flipkart
+  labels:
+    policy.sigstore.dev/include: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"

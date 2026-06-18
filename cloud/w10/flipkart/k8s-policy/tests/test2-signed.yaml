@@ -1,0 +1,18 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
+# Lab 2.2 Test 2 — image SIGNED by CI, must be ADMITTED.
+#
+# Apply with:
+#   IMAGE=ghcr.io/<owner>/flipkart-backend@sha256:<digest from CI run>
+#   sed "s|REPLACE_ME|$IMAGE|" tests/test2-signed.yaml | kubectl apply -f -
+# Expected: pod reaches Running.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: signed-backend
+  namespace: flipkart
+spec:
+  containers:
+    - name: backend
+      image: REPLACE_ME
+      ports:
+        - containerPort: 4000

@@ -1,0 +1,17 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
+# Lab 2.2 Test 1 — UNSIGNED image, must be REJECTED.
+#
+# Apply with:
+#   kubectl apply -f tests/test1-unsigned.yaml
+# Expected:
+#   error: admission webhook "policy.sigstore.dev" denied the request:
+#   no matching signatures
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsigned-nginx
+  namespace: flipkart
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest

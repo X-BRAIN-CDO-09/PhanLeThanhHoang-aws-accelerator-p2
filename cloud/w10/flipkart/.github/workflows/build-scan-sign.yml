@@ -1,0 +1,132 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Trivy + Cosign
+name: build-scan-sign
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloud/w10/flipkart/backend/**'
+      - 'cloud/w10/flipkart/frontend/**'
+      - 'cloud/w10/flipkart/Dockerfile.*'
+      - 'cloud/w10/flipkart/package*.json'
+      - 'cloud/w10/flipkart/server.js'
+      - 'cloud/w10/flipkart/.github/workflows/build-scan-sign.yml'
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Component to build'
+        required: true
+        default: 'backend'
+        type: choice
+        options: [backend, frontend]
+
+permissions:
+  contents: read
+  packages: write   # push to GHCR
+  id-token: write   # cosign keyless (optional, we use key-based here)
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: ${{ github.repository_owner }}
+  CONTEXT: cloud/w10/flipkart
+
+jobs:
+  build-scan-sign:
+    name: ${{ matrix.component }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [backend, frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image vars
+        id: vars
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          image="${REGISTRY}/${IMAGE_OWNER}/flipkart-${{ matrix.component }}"
+          # Lowercase the path — GHCR rejects mixed-case repos.
+          image="${image,,}"
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
+          echo "tag=${short_sha}"  >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image (load to local daemon for Trivy)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.CONTEXT }}/Dockerfile.${{ matrix.component }}
+          load: true
+          push: false
+          tags: |
+            ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+
+      # Lab 2.2 step 1: Trivy must fail the pipeline on HIGH/CRITICAL CVEs.
+      - name: Trivy vulnerability scan (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+
+      - name: Push image to GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.CONTEXT }}/Dockerfile.${{ matrix.component }}
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+            ${{ steps.vars.outputs.image }}:latest
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      # Lab 2.2 step 2: sign by digest, not tag, so the signature can't drift.
+      - name: Resolve image digest
+        id: digest
+        run: |
+          digest=$(docker buildx imagetools inspect \
+            "${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}" \
+            --format '{{json .Manifest}}' | jq -r '.digest')
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Cosign sign (key-based)
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD:    ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign --yes \
+            --key env://COSIGN_PRIVATE_KEY \
+            "${{ steps.vars.outputs.image }}@${{ steps.digest.outputs.digest }}"
+
+      - name: Verify (sanity check)
+        run: |
+          cosign verify \
+            --key cloud/w10/flipkart/k8s-policy/cosign.pub \
+            "${{ steps.vars.outputs.image }}@${{ steps.digest.outputs.digest }}"
+
+      - name: Summary
+        run: |
+          {
+            echo "### ${{ matrix.component }} image"
+            echo ""
+            echo "- Image: \`${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}\`"
+            echo "- Digest: \`${{ steps.digest.outputs.digest }}\`"
+            echo "- Trivy: no HIGH/CRITICAL"
+            echo "- Cosign: signed with \`COSIGN_PRIVATE_KEY\`"
+          } >> "$GITHUB_STEP_SUMMARY"

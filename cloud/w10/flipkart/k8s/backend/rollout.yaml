@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: flipkart-backend:v1
-          imagePullPolicy: Never
+          image: ghcr.io/x-brain-cdo-09/flipkart-backend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 4000

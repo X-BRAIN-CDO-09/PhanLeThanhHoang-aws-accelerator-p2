@@ -1,0 +1,7 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
+# Replace this file with the public key produced by `cosign generate-key-pair`
+# at lab time. The matching private key + password live in GitHub Secrets as
+# COSIGN_PRIVATE_KEY and COSIGN_PASSWORD — do NOT commit cosign.key here.
+-----BEGIN PUBLIC KEY-----
+REPLACE_ME_WITH_REAL_COSIGN_PUBLIC_KEY
+-----END PUBLIC KEY-----

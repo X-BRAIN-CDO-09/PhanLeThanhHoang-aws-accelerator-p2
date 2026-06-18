@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: flipkart-frontend:v1
-          imagePullPolicy: Never
+          image: ghcr.io/x-brain-cdo-09/flipkart-frontend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           readinessProbe:

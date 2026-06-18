@@ -1,18 +1,23 @@
+# [w10-pm NEW] Created for w10_afternoon_secrets_supply_chain lab — Lab 2.2 Cosign
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: flipkart-policy
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: default
   source:
     repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
     targetRevision: main
-    path: cloud/w10/flipkart/argocd/apps
+    path: cloud/w10/flipkart/k8s-policy
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: cosign-system
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,29 @@
+# Lab 1.2 - Luật 1: cấm image tag :latest
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdisallowedtags
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDisallowedTags
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            tags:
+              type: array
+              items:
+                type: string
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sdisallowedtags
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        tag := input.parameters.tags[_]
+        endswith(container.image, sprintf(":%s", [tag]))
+        msg := sprintf("image %q dùng tag bị cấm: %q", [container.image, tag])
+      }

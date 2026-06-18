@@ -1,0 +1,20 @@
+# Lab 1.2 - Luật 2: bắt buộc resources.limits
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlimits
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLimits
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8srequiredlimits
+
+      violation[{"msg": msg}] {
+        container := input.review.object.spec.containers[_]
+        not container.resources.limits
+        msg := sprintf("container %q thiếu resources.limits", [container.name])
+      }

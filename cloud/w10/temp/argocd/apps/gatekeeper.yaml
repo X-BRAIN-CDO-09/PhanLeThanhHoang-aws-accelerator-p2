@@ -1,20 +1,22 @@
-# ArgoCD App: Deploy common resources (namespace)
+# ArgoCD App: cài OPA Gatekeeper controller
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: common
+  name: gatekeeper
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: default
   source:
-    repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
-    path: cloud/w10/temp/app-common
-    targetRevision: main
+    repoURL: https://open-policy-agent.github.io/gatekeeper/charts
+    chart: gatekeeper
+    targetRevision: 3.16.3
+    helm:
+      releaseName: gatekeeper
   destination:
     server: https://kubernetes.default.svc
-    namespace: demo
+    namespace: gatekeeper-system
   syncPolicy:
     automated:
       prune: true

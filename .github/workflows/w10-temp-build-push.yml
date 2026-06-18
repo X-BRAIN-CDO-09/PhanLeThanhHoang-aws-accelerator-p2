@@ -1,13 +1,13 @@
 # Build and push Docker image to GitHub Container Registry
-name: Build and Push Image
+name: W10 Temp - Build and Push Image
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'src/api/**'
-      - '.github/workflows/build-push.yml'
+      - 'cloud/w10/temp/src/api/**'
+      - '.github/workflows/w10-temp-build-push.yml'
   workflow_dispatch:
 
 env:
@@ -31,7 +31,7 @@ jobs:
         id: semver
         uses: paulhatch/semantic-version@v5.4.0
         with:
-          tag_prefix: "v"
+          tag_prefix: "w10-api-v"
           major_pattern: "(BREAKING CHANGE:|!:)"
           minor_pattern: "^feat"
           version_format: "${major}.${minor}.${patch}"
@@ -57,29 +57,29 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./src/api
+          context: ./cloud/w10/temp/src/api
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Update rollout.yaml with new version
         run: |
-          sed -i "s|image: ghcr.io/.*/w10-api:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.version }}|g" app-api/rollout.yaml
-          sed -i "s|value: \"v.*\"|value: \"v${{ steps.semver.outputs.version }}\"|g" app-api/rollout.yaml
+          sed -i "s|image: ghcr.io/.*/w10-api:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.version }}|g" cloud/w10/temp/app-api/rollout.yaml
+          sed -i "s|value: \"v.*\"|value: \"v${{ steps.semver.outputs.version }}\"|g" cloud/w10/temp/app-api/rollout.yaml
 
       - name: Commit and push version update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add app-api/rollout.yaml
+          git add cloud/w10/temp/app-api/rollout.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: bump version to v${{ steps.semver.outputs.version }}"
+            git commit -m "chore(w10-api): bump version to v${{ steps.semver.outputs.version }}"
             git push
           fi
 
       - name: Create git tag
         run: |
-          git tag v${{ steps.semver.outputs.version }}
-          git push origin v${{ steps.semver.outputs.version }}
+          git tag w10-api-v${{ steps.semver.outputs.version }}
+          git push origin w10-api-v${{ steps.semver.outputs.version }}

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ghcr.io/Vuong-Bach/w10-api:0.0.1
+        image: ghcr.io/hofang42/w10-api:0.0.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -43,14 +43,7 @@ spec:
             path: /healthz
             port: 8080
           initialDelaySeconds: 3
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 10001
-          allowPrivilegeEscalation: false
         resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
           limits:
             cpu: 200m
             memory: 128Mi

@@ -1,8 +1,8 @@
-# ArgoCD App: Deploy common resources (namespace)
+# ArgoCD App: Deploy RBAC roles + bindings (Lab 1.1)
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: common
+  name: rbac
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
-    path: cloud/w10/temp/app-common
+    path: cloud/w10/temp/rbac
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
@@ -20,5 +20,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
     - ServerSideApply=true

@@ -5,6 +5,13 @@ on:
     paths:
       - 'cloud/w9/sample_app/Counter-App/kubernetes/**'
       - 'cloud/w9/flipkart/k8s/**'
+      - 'cloud/w10/temp/app-api/**'
+      - 'cloud/w10/temp/app-analysis/**'
+      - 'cloud/w10/temp/app-alert/**'
+      - 'cloud/w10/temp/app-common/**'
+      - 'cloud/w10/temp/argocd/**'
+      - 'cloud/w10/temp/rbac/**'
+      - 'cloud/w10/temp/gatekeeper/**'
 
 jobs:
   validate:
@@ -33,3 +40,14 @@ jobs:
 
       - name: Validate Flipkart Frontend YAML
         run: kubeconform -strict -summary cloud/w9/flipkart/k8s/frontend/
+
+      - name: Validate W10 Temp YAML
+        run: |
+          kubeconform -strict -summary -ignore-missing-schemas \
+            cloud/w10/temp/app-api/ \
+            cloud/w10/temp/app-analysis/ \
+            cloud/w10/temp/app-alert/ \
+            cloud/w10/temp/app-common/ \
+            cloud/w10/temp/argocd/ \
+            cloud/w10/temp/rbac/ \
+            cloud/w10/temp/gatekeeper/

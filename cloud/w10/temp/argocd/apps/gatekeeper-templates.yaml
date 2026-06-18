@@ -1,24 +1,24 @@
-# ArgoCD App: Deploy common resources (namespace)
+# ArgoCD App: Deploy ConstraintTemplates (Rego logic).
+# Sync wave 1 - sau khi controller (wave -2) đã ready.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: common
+  name: gatekeeper-templates
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
   source:
     repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git
-    path: cloud/w10/temp/app-common
+    path: cloud/w10/temp/gatekeeper/templates
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
-    namespace: demo
+    namespace: gatekeeper-system
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
     - ServerSideApply=true

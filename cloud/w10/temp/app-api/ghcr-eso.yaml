@@ -38,7 +38,7 @@ spec:
               "ghcr.io": {
                 "username": "{{ .username }}",
                 "password": "{{ .password }}",
-                "auth": "{{ (printf \"%s:%s\" .username .password) | b64enc }}"
+                "auth": "{{ printf "%s:%s" .username .password | b64enc }}"
               }
             }
           }

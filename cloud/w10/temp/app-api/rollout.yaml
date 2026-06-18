@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ghcr.io/hofang42/w10-api:0.0.1
+        image: ghcr.io/X-BRAIN-CDO-09/w10-api:0.0.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

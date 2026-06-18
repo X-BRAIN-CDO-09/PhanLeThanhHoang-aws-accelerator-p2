@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2 # Chú ý: bạn cần thay đổi URL này trỏ đúng vào repository của bạn
+    repoURL: https://github.com/X-BRAIN-CDO-09/PhanLeThanhHoang-aws-accelerator-p2.git # Chú ý: bạn cần thay đổi URL này trỏ đúng vào repository của bạn
     targetRevision: main
     path: cloud/w10/temp/eso # Chỉnh sửa đường dẫn này cho khớp với cấu trúc trong repo thật
   destination:

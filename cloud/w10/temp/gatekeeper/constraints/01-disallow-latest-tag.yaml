@@ -5,6 +5,7 @@ metadata:
 spec:
   enforcementAction: deny
   match:
+    excludedNamespaces: ["kube-system", "gatekeeper-system", "argocd", "external-secrets"]
     kinds:
     - apiGroups: [""]
       kinds: ["Pod"]

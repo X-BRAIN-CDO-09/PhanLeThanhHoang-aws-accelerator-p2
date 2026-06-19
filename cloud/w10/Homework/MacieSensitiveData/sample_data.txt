@@ -1,0 +1,7 @@
+Hello,
+
+Here are the AWS credentials you requested:
+Access Key ID: AKIAIOSFODNN7EXAMPLE
+Secret Access Key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+Please do not share these.

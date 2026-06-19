@@ -1,0 +1,16 @@
+Internal demo note for W10 Macie homework.
+
+This file intentionally contains fake sensitive-looking data so Amazon Macie can detect findings during the lab.
+
+Example internal reference:
+training-token-demo-000000000000000000
+
+Example fake API note:
+do-not-use-real-keys-in-training-data
+
+Macie custom data identifier demo.
+These are fake training strings, not real credentials.
+
+confidential customer secret api_key CONFIDENTIAL_CUSTOMER_SECRET_ABCD1234EFGH5678IJKL9012
+confidential customer secret api_key CONFIDENTIAL_CUSTOMER_SECRET_QWER1234TYUI5678OPAS9012
+confidential customer secret api_key CONFIDENTIAL_CUSTOMER_SECRET_ZXCV1234BNMM5678LKJH9012
